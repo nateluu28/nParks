@@ -12,6 +12,7 @@ import { Platform, StyleSheet, Text, View } from "react-native";
 import firebase from "@react-native-firebase/app";
 
 import { NavigationNativeContainer } from "@react-navigation/native";
+import { RootNavigator } from "./src/navigation/RootNavigator";
 
 // TODO(you): import any additional firebase services that you require for your app, e.g for auth:
 //    1) install the npm package: `yarn add @react-native-firebase/auth@alpha` - you do not need to
@@ -37,18 +38,7 @@ export default class App extends Component<Props> {
   render() {
     return (
       <NavigationNativeContainer>
-        <View style={styles.container}>
-          <Text style={styles.welcome}>
-            Welcome to React Native + Firebase!
-          </Text>
-          <Text style={styles.instructions}>To get started, edit App.js</Text>
-          <Text style={styles.instructions}>{instructions}</Text>
-          {!firebase.apps.length && (
-            <Text style={styles.instructions}>
-              {`\nYou currently have no Firebase apps registered, this most likely means you've not downloaded your project credentials. Visit the link below to learn more. \n\n ${firebaseCredentials}`}
-            </Text>
-          )}
-        </View>
+        <RootNavigator />
       </NavigationNativeContainer>
     );
   }
