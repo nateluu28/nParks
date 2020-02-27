@@ -1,25 +1,45 @@
 import axios from "axios";
 
+export function processLatLong(latlong) {
+  const splitString = latlong.split(",");
+  return {
+    lat: splitString[0].replace("lat:", ""),
+    long: splitString[1].replace("long:", "")
+  };
+}
+
 /*
 Given the 'stateCode' make a request to the NPS API and 
 fetch ‘resultsPerPage’ number of parks from page ‘page’.
 Returns an array of park objects
 */
-export function getParksInState(stateCode, resultsPerPage, page) {
+export async function getParksInState(
+  stateCode,
+  resultsPerPage,
+  page,
+  fields = []
+) {
   var address =
     "https://developer.nps.gov/api/v1/parks?api_key=XHpS7fKCjdUuTrvKD3tHCuP3rxmKh2cJryQzg23b" +
     "&stateCode=" +
     stateCode +
     "&limit=" +
-    resultsPerPage +
-    "&start=" +
-    (page - 1) * resultsPerPage;
-  axios
-    .get(address)
-    .then(response => {
-      return response.data.data;
-    })
-    .catch(error => console.error(error));
+    resultsPerPage;
+
+  if (page) {
+    address += "&start=" + (page * resultsPerPage + 1);
+  }
+
+  if (fields) {
+    address += "&fields=" + fields.join(",");
+  }
+
+  try {
+    const results = await axios.get(address);
+    return results.data.data;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /*
