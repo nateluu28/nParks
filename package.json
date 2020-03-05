@@ -11,6 +11,7 @@
     "prepare": "patch-package"
   },
   "dependencies": {
+    "@expo/react-native-action-sheet": "^3.5.0",
     "@houseme-networks/rental-primitives": "^0.1.0",
     "@react-native-community/masked-view": "^0.1.6",
     "@react-native-firebase/app": "6.3.4",

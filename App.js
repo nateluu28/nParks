@@ -13,6 +13,7 @@ import firebase from "@react-native-firebase/app";
 
 import { NavigationNativeContainer } from "@react-navigation/native";
 import { RootNavigator } from "./src/navigation/RootNavigator";
+import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 
 // TODO(you): import any additional firebase services that you require for your app, e.g for auth:
 //    1) install the npm package: `yarn add @react-native-firebase/auth@alpha` - you do not need to
@@ -38,7 +39,9 @@ export default class App extends Component<Props> {
   render() {
     return (
       <NavigationNativeContainer>
-        <RootNavigator />
+        <ActionSheetProvider>
+          <RootNavigator />
+        </ActionSheetProvider>
       </NavigationNativeContainer>
     );
   }

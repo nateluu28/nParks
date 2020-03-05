@@ -6,6 +6,7 @@ import { Header, Button } from "../../../../components";
 import { ScrollView } from "react-native-gesture-handler";
 import { getParksInState, processLatLong } from "../../../../api/nps/index";
 import { sortObjectsByLatLong } from "../../../../api/geo/index";
+import { ParkPreview } from "../../components/ParkPreview";
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
@@ -118,35 +119,7 @@ export const ParksLandingScreen = () => {
         >
           {parks &&
             parks.map(park => {
-              return (
-                <Box height={150} mb={10} mx={12} bg={"grey"} borderRadius={7}>
-                  <ImageBackground
-                    style={{
-                      width: "100%",
-                      height: "100%"
-                    }}
-                    source={{
-                      uri: park.images[0].url
-                    }}
-                  >
-                    <Box width={"100%"} height={"100%"} bg={"#00000050"}>
-                      <Flex
-                        key={park.id}
-                        py={5}
-                        px={2}
-                        width={"80%"}
-                        height={"100%"}
-                        flexDirection={"row"}
-                        flexWrap={"wrap"}
-                      >
-                        <Header fontSize={12}>
-                          {`${park.fullName}`.toUpperCase()}
-                        </Header>
-                      </Flex>
-                    </Box>
-                  </ImageBackground>
-                </Box>
-              );
+              return <ParkPreview key={park.id} park={park} />;
             })}
           {canLoadMoreParks && (
             <Button

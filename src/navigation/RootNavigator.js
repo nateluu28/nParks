@@ -6,15 +6,16 @@ import { MainAuthScreen } from "../features/Auth";
 import { ParksLandingScreen } from "../features/ParksTab/screens/Landing/index";
 import { NewsLandingScreen } from "../features/News/screens/Landing/index";
 import { SettingsLandingScreen } from "../features/SettingsTab/screens/Landing/index";
+import { ParksTabNavigator } from "./ParksTabNavigator";
 
 const Tab = createBottomTabNavigator();
 
 export const TabNavigator = () => {
   return (
     <Tab.Navigator headerMode={"card"}>
-      <Stack.Screen name={"Parks"} component={ParksLandingScreen} />
-      <Stack.Screen name={"News"} component={NewsLandingScreen} />
-      <Stack.Screen name={"Settings"} component={SettingsLandingScreen} />
+      <Tab.Screen name={"Parks"} component={ParksTabNavigator} />
+      <Tab.Screen name={"News"} component={NewsLandingScreen} />
+      <Tab.Screen name={"Settings"} component={SettingsLandingScreen} />
     </Tab.Navigator>
   );
 };
