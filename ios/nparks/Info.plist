@@ -57,6 +57,17 @@
     <array>
         <string>telprompt</string>
         <string>mailto</string>
+        <string>comgooglemaps</string>
+        <string>citymapper</string>
+        <string>uber</string>
+        <string>lyft</string>
+        <string>transit</string>
+        <string>truckmap</string>
+        <string>waze</string>
+        <string>yandexnavi</string>
+        <string>moovit</string>
+        <string>yandexmaps</string>
+        <string>kakaomap</string>
     </array>
 </dict>
 </plist>

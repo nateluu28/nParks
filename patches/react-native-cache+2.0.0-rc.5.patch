@@ -1,0 +1,40 @@
+diff --git a/node_modules/react-native-cache/dist/cache.js b/node_modules/react-native-cache/dist/cache.js
+index 8936333..65af9f7 100644
+--- a/node_modules/react-native-cache/dist/cache.js
++++ b/node_modules/react-native-cache/dist/cache.js
+@@ -59,7 +59,7 @@ class Cache {
+     }
+     async peek(key) {
+         const compositeKey = this.makeCompositeKey(key);
+-        const entryJsonString = await this.backend.getItem(compositeKey);
++        const entryJsonString = await this.backend.get(compositeKey);
+         let entry;
+         if (entryJsonString) {
+             entry = JSON.parse(entryJsonString);
+@@ -82,7 +82,7 @@ class Cache {
+         };
+         const compositeKey = this.makeCompositeKey(key);
+         const entryString = JSON.stringify(entry);
+-        await this.backend.setItem(compositeKey, entryString);
++        await this.backend.set(compositeKey, entryString);
+         await this.refreshLRU(key);
+         return this.enforceLimits();
+     }
+@@ -92,7 +92,7 @@ class Cache {
+         return this.setLRU(lru);
+     }
+     async getLRU() {
+-        const lruString = await this.backend.getItem(this.getLRUKey());
++        const lruString = await this.backend.get(this.getLRUKey());
+         let lru;
+         if (!lruString) {
+             lru = [];
+@@ -120,7 +120,7 @@ class Cache {
+         return this.setLRU(newLRU);
+     }
+     async setLRU(lru) {
+-        return this.backend.setItem(this.getLRUKey(), JSON.stringify(lru));
++        return this.backend.set(this.getLRUKey(), JSON.stringify(lru));
+     }
+ }
+ exports.default = Cache;

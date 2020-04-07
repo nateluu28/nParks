@@ -1,30 +1,8 @@
-import { getDistance } from "geolib";
-import Geohash from "latlon-geohash";
-
-// export const getGeohashForCurrentPosition = () => {
-
-// }
-
-export const simplifyPosition = ({ lat, long }, precision) => {
-  // Hash the position to a specified precision
-  const hashedPosition = Geohash.encode(lat, long, precision);
-
-  // Decode the position
-  const simplifiedPosition = Geohash.decode(hashedPosition);
-
-  // Return the simplified position and the geoHash for comparisons
-  return {
-    lat: simplifiedPosition.lat,
-    long: simplifiedPosition.lat,
-    hash: hashedPosition,
-  };
-};
-
-export const sortObjectsByLatLong = ({
+const sortObjectsByLatLong = ({
   field,
   objects,
   lat: referenceLat,
-  long: referenceLong,
+  long: referenceLong
 }) => {
   return objects.sort((a, b) => {
     if (!a[field]) {
