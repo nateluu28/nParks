@@ -7,16 +7,86 @@ import { ParksLandingScreen } from "../features/ParksTab/screens/Landing/index";
 import { NewsLandingScreen } from "../features/News/screens/Landing/index";
 import { SettingsLandingScreen } from "../features/SettingsTab/screens/Landing/index";
 import { ParksTabNavigator } from "./ParksTabNavigator";
+import { ParkDetailsScreen } from "../features/ParksTab/screens/ParkDetails/index";
+import { AlertDetails } from "../features/ParksTab/screens/AlertDetails/index";
+import { OperatingHoursScreen } from "../features/ParksTab/screens/OperatingHours/index";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import {
+  faTrees,
+  faNewspaper,
+  faCog,
+  faHeart,
+} from "@fortawesome/pro-light-svg-icons";
+import { FavoritesLandingScreen } from "../features/FavoritesTab/screens/Landing/index";
 
 const Tab = createBottomTabNavigator();
 
 export const TabNavigator = () => {
   return (
     <Tab.Navigator headerMode={"card"}>
-      <Tab.Screen name={"Parks"} component={ParksTabNavigator} />
-      <Tab.Screen name={"News"} component={NewsLandingScreen} />
-      <Tab.Screen name={"Settings"} component={SettingsLandingScreen} />
+      <Tab.Screen
+        name={"Parks"}
+        component={ParksTabNavigator}
+        options={{
+          tabBarLabel: "Parks",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesomeIcon icon={faTrees} color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name={"News"}
+        component={NewsLandingScreen}
+        options={{
+          tabBarLabel: "News",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesomeIcon icon={faNewspaper} color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name={"Favorites"}
+        component={FavoritesLandingScreen}
+        options={{
+          tabBarLabel: "Favorites",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesomeIcon icon={faHeart} color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name={"Settings"}
+        component={SettingsLandingScreen}
+        options={{
+          tabBarLabel: "Settings",
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesomeIcon icon={faCog} color={color} size={size} />
+          ),
+        }}
+      />
     </Tab.Navigator>
+  );
+};
+
+const MainNavigatorStack = createStackNavigator();
+
+export const MainNavigator = () => {
+  return (
+    <MainNavigatorStack.Navigator headerMode={"none"}>
+      <MainNavigatorStack.Screen name={"Tabs"} component={TabNavigator} />
+      <MainNavigatorStack.Screen
+        name={"Parks.Details"}
+        component={ParkDetailsScreen}
+      />
+      <MainNavigatorStack.Screen
+        name={"Parks.Details.Alerts"}
+        component={AlertDetails}
+      />
+      <MainNavigatorStack.Screen
+        name={"Parks.Details.Hours"}
+        component={OperatingHoursScreen}
+      />
+    </MainNavigatorStack.Navigator>
   );
 };
 
@@ -44,7 +114,7 @@ export const RootNavigator = () => {
       {!user || initializing ? (
         <Stack.Screen name={"AUTH"} component={MainAuthScreen} />
       ) : (
-        <Stack.Screen name={"MainNavigator"} component={TabNavigator} />
+        <Stack.Screen name={"MainNavigator"} component={MainNavigator} />
       )}
     </Stack.Navigator>
   );

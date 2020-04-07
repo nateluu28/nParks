@@ -8,12 +8,20 @@
 
 import React, { Component } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
+import { useDarkMode } from "react-native-dark-mode";
 
 import firebase from "@react-native-firebase/app";
 
-import { NavigationNativeContainer } from "@react-navigation/native";
+import {
+  NavigationNativeContainer,
+  DefaultTheme,
+  DarkTheme,
+} from "@react-navigation/native";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
+
+import { Cache } from "react-native-cache";
+import { ParkProvider, FavoriteProvider } from "./src/providers";
 
 // TODO(you): import any additional firebase services that you require for your app, e.g for auth:
 //    1) install the npm package: `yarn add @react-native-firebase/auth@alpha` - you do not need to
@@ -25,43 +33,44 @@ import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 const instructions = Platform.select({
   ios: "Press Cmd+R to reload,\nCmd+D or shake for dev menu",
   android:
-    "Double tap R on your keyboard to reload,\nShake or press menu button for dev menu"
+    "Double tap R on your keyboard to reload,\nShake or press menu button for dev menu",
 });
 
 const firebaseCredentials = Platform.select({
   ios: "https://invertase.link/firebase-ios",
-  android: "https://invertase.link/firebase-android"
+  android: "https://invertase.link/firebase-android",
 });
 
-type Props = {};
-
-export default class App extends Component<Props> {
-  render() {
-    return (
-      <NavigationNativeContainer>
-        <ActionSheetProvider>
-          <RootNavigator />
-        </ActionSheetProvider>
-      </NavigationNativeContainer>
-    );
-  }
-}
+export default () => {
+  const isDarkMode = useDarkMode();
+  return (
+    <NavigationNativeContainer theme={isDarkMode ? DarkTheme : DefaultTheme}>
+      <ActionSheetProvider>
+        <ParkProvider>
+          <FavoriteProvider>
+            <RootNavigator />
+          </FavoriteProvider>
+        </ParkProvider>
+      </ActionSheetProvider>
+    </NavigationNativeContainer>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5FCFF"
+    backgroundColor: "#F5FCFF",
   },
   welcome: {
     fontSize: 20,
     textAlign: "center",
-    margin: 10
+    margin: 10,
   },
   instructions: {
     textAlign: "center",
     color: "#333333",
-    marginBottom: 5
-  }
+    marginBottom: 5,
+  },
 });

@@ -1,12 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { Flex, Box } from "@houseme-networks/rental-primitives";
-import { ActivityIndicator, ImageBackground } from "react-native";
+import { ActivityIndicator, ImageBackground, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Header, Button } from "../../../../components";
-import { ScrollView } from "react-native-gesture-handler";
-import { getParksInState, processLatLong } from "../../../../api/nps/index";
+import { ScrollView, TouchableHighlight } from "react-native-gesture-handler";
+import {
+  getParksInState,
+  processLatLong,
+  getNearbyParks,
+  compareValues,
+} from "../../../../api/nps/index";
 import { sortObjectsByLatLong } from "../../../../api/geo/index";
 import { ParkPreview } from "../../components/ParkPreview";
+import {
+  useParksCache,
+  getParkDetails,
+} from "../../../../providers/Parks/index";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import {
+  faTrees,
+  faDeer,
+  faFish,
+  faSquirrel,
+  faCamera,
+} from "@fortawesome/pro-light-svg-icons";
+import { useDarkMode } from "react-native-dark-mode";
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
@@ -14,31 +32,34 @@ function getRandomInt(min, max) {
 
 const loadingMessages = [
   {
-    message: "Taming the Bears",
-    icon: null
+    message: "Swimming With the Fish",
+    icon: null,
   },
   {
     message: "Watering the Trees",
-    icon: null
+    icon: null,
   },
   {
-    message: "Taking a picture"
+    message: "Taking a picture",
   },
   {
-    message: "Tucking in the Deer"
+    message: "Tucking in the Deer",
   },
   {
-    message: "Counting the Squirrels"
-  }
+    message: "Counting the Squirrels",
+  },
 ];
 
+const loadingIcons = [faFish, faTrees, faCamera, faDeer, faSquirrel];
+
 const FetchingParksIndicator = () => {
-  const loadingMessage =
-    loadingMessages[getRandomInt(1, loadingMessages.length - 1)];
+  const messageIndex = getRandomInt(1, loadingMessages.length - 1);
+  const loadingMessage = loadingMessages[messageIndex];
+  const loadingIcon = loadingIcons[messageIndex];
   return (
-    <Flex justifyContent={"center"} alignItems={"center"} height={"100%"}>
-      <ActivityIndicator />
-      <Header fontSize={20} color={"black"} textAlign={"center"}>
+    <Flex justifyContent={"center"} alignItems={"center"} flex={1} height={300}>
+      <FontAwesomeIcon icon={loadingIcon} size={50} color={"grey"} />
+      <Header fontSize={20} color={"grey"} textAlign={"center"}>
         {loadingMessage.message}
       </Header>
     </Flex>
@@ -46,99 +67,166 @@ const FetchingParksIndicator = () => {
 };
 
 export const ParksLandingScreen = () => {
+  const parksCache = useParksCache();
   const [parks, setParks] = useState(null);
   const [gettingParks, setGettingParks] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [canLoadMoreParks, setCanLoadMoreParks] = useState(false);
-
-  const getParks = async ({ pageNumber = 0, limit = 10, merge = true }) => {
-    setGettingParks(true);
-    var newParks = await getParksInState("CA", limit, pageNumber, ["images"]);
-    const oldParks = parks;
-
-    if (newParks.length < limit) {
-      setCanLoadMoreParks(false);
-    } else {
-      setCanLoadMoreParks(true);
-    }
-
-    console.log(newParks);
-
-    newParks = newParks.map(park => {
-      if (!park.latLong) {
-        return { ...park, latLong: null };
-      } else {
-        return { ...park, latLong: processLatLong(park.latLong) };
-      }
-    });
-
-    var newParksArray = [];
-    if (merge && oldParks) {
-      newParksArray = [...oldParks, ...newParks];
-    } else {
-      newParksArray = newParks;
-    }
-
-    newParksArray = [...new Set(newParksArray)];
-
-    const sortedParks = sortObjectsByLatLong({
-      field: "latLong",
-      objects: newParksArray,
-      lat: 37.97878,
-      long: -121.310667
-    });
-
-    console.log("Sorted");
-    console.log(sortedParks);
-
-    setParks(sortedParks);
-
-    setGettingParks(false);
-  };
+  const [distance, setDistance] = useState(50);
+  const isDarkMode = useDarkMode();
 
   useEffect(() => {
-    if (!parks && !gettingParks) {
+    if (!gettingParks) {
       console.log("Getting parks");
+      const getParks = async ({ pageNumber = 0, limit = 10, merge = true }) => {
+        setGettingParks(true);
+
+        var parkDocuments = await getNearbyParks({
+          lat: 37.97878,
+          long: -121.310667,
+          distance: distance,
+        });
+
+        parkDocuments.sort(compareValues("distance"));
+
+        console.log(parkDocuments[0]);
+
+        let nearbyParks = await Promise.all(
+          parkDocuments.map(async (parkDocument) => {
+            let { d: parkDetails } = await getParkDetails(
+              parksCache,
+              parkDocument.id
+            );
+            return { documentID: parkDocument.id, ...parkDetails };
+          })
+        );
+
+        setParks(nearbyParks);
+        setGettingParks(false);
+      };
       getParks({});
     }
-    return () => {
-      // cleanup
-    };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [distance]);
 
-  if (gettingParks) {
-    return <FetchingParksIndicator />;
-  } else {
-    return (
-      <SafeAreaView>
-        <ScrollView
-          style={{
-            height: "100%"
-          }}
+  return (
+    <SafeAreaView>
+      <ScrollView>
+        <Flex
+          mx={12}
+          m={3}
+          flexDirection={"row"}
+          justifyContent={"space-between"}
         >
-          {parks &&
-            parks.map(park => {
-              return <ParkPreview key={park.id} park={park} />;
-            })}
-          {canLoadMoreParks && (
-            <Button
-              mx={12}
-              px={2}
-              my={2}
-              onPress={() => {
-                if (!currentPage) {
-                  setCurrentPage(0);
-                }
+          <Header fontSize={16} color={isDarkMode ? "white" : "black"}>
+            {"Distance"}
+          </Header>
 
-                getParks({ merge: true, pageNumber: currentPage + 1 });
-                setCurrentPage(currentPage + 1);
-              }}
-              buttonText={"Load More Parks"}
-            />
-          )}
-        </ScrollView>
-      </SafeAreaView>
-    );
-  }
+          <Flex flexDirection={"row"} justifyContent={"space-between"}>
+            <Box mx={2}>
+              <TouchableHighlight
+                underlayColor={"transparent"}
+                onPress={() => {
+                  if (distance != 50) {
+                    setDistance(50);
+                  }
+                }}
+              >
+                <Header
+                  fontSize={16}
+                  color={
+                    distance === 50
+                      ? "blue"
+                      : isDarkMode
+                      ? "lightgrey"
+                      : "black"
+                  }
+                >
+                  {"50"}
+                </Header>
+              </TouchableHighlight>
+            </Box>
+            <Box mx={2}>
+              <TouchableHighlight
+                underlayColor={"transparent"}
+                onPress={() => {
+                  if (distance != 150) {
+                    setDistance(150);
+                  }
+                }}
+              >
+                <Header
+                  fontSize={16}
+                  color={
+                    distance === 150
+                      ? "blue"
+                      : isDarkMode
+                      ? "lightgrey"
+                      : "black"
+                  }
+                >
+                  {"150"}
+                </Header>
+              </TouchableHighlight>
+            </Box>
+            <Box ml={2}>
+              <TouchableHighlight
+                underlayColor={"transparent"}
+                onPress={() => {
+                  if (distance != 250) {
+                    setDistance(250);
+                  }
+                }}
+              >
+                <Header
+                  fontSize={16}
+                  color={
+                    distance === 250
+                      ? "blue"
+                      : isDarkMode
+                      ? "lightgrey"
+                      : "black"
+                  }
+                >
+                  {"250"}
+                </Header>
+              </TouchableHighlight>
+            </Box>
+          </Flex>
+        </Flex>
+        {gettingParks && <FetchingParksIndicator />}
+
+        {!gettingParks && (!parks || parks.length === 0) && (
+          <Flex height={300} justifyContent={"center"} alignItems={"center"}>
+            <FontAwesomeIcon icon={faTrees} size={50} color={"grey"} />
+            <Header fontSize={20} color={"grey"}>
+              {"It Doesn't Look There\nAre Any Parks Nearby"}
+            </Header>
+          </Flex>
+        )}
+
+        {parks &&
+          parks.map((park) => {
+            return <ParkPreview key={park.id} {...park} />;
+          })}
+        {canLoadMoreParks && (
+          <Button
+            mx={12}
+            px={2}
+            my={2}
+            onPress={() => {
+              if (!currentPage) {
+                setCurrentPage(0);
+              }
+
+              getParks({ merge: true, pageNumber: currentPage + 1 });
+              setCurrentPage(currentPage + 1);
+            }}
+            buttonText={"Load More Parks"}
+          />
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
 };
