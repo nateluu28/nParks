@@ -1,12 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { Flex, Box } from "@houseme-networks/rental-primitives";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import auth from "@react-native-firebase/auth";
 
 import styled from "styled-components/native";
-import { TouchableOpacity } from "react-native-gesture-handler";
-import { View, ImageBackground } from "react-native";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { View, ImageBackground, TextInput } from "react-native";
+import { useDarkMode } from "react-native-dark-mode";
+
+import { Button, Header } from "../../../../components";
+import { KeyboardAvoidingView } from "react-native";
+import { Keyboard } from "react-native";
+import { Platform } from "react-native";
 
 const AuthButton = styled(Flex)`
   background: #5ca4ff;
@@ -35,77 +41,120 @@ const AuthHeaderText = styled.Text`
 `;
 
 export const MainAuthScreen = () => {
+  const isDarkMode = useDarkMode();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   return (
     <ImageBackground
       style={{ width: "100%", height: "100%" }}
       source={require("../../../../assets/images/toyota.jpg")}
     >
-      <SafeAreaView style={{ backgroundColor: "#00000075" }}>
-        <Flex
-          flexDirection={"column"}
-          justifyContent={"flex-end"}
-          width={"100%"}
-          height={"100%"}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{
+          width: "100%",
+          height: "100%",
+        }}
+      >
+        <SafeAreaView
+          style={{
+            backgroundColor: "#00000075",
+            width: "100%",
+            height: "100%",
+          }}
         >
-          <Box textAlign={"left"} ml={10} mb={5}>
-            <AuthHeaderText>{"Discover"}</AuthHeaderText>
-            <AuthHeaderText>{"Your"}</AuthHeaderText>
-            <AuthHeaderText>{"Park."}</AuthHeaderText>
-          </Box>
-          <Box>
-            <Flex flexDirection={"column"}>
-              <Box>
-                <TouchableOpacity>
-                  <AuthButton
-                    alginItems={"center"}
-                    justifyContent={"center"}
-                    mx={12}
-                  >
-                    <AuthButtonText>{"Sign Up"}</AuthButtonText>
-                  </AuthButton>
-                </TouchableOpacity>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              Keyboard.dismiss();
+            }}
+          >
+            <Box justifyContent={"flex-end "}>
+              <Box textAlign={"left"} ml={10} my={5}>
+                <AuthHeaderText>{"Discover"}</AuthHeaderText>
+                <AuthHeaderText>{"Your"}</AuthHeaderText>
+                <AuthHeaderText>{"Park."}</AuthHeaderText>
               </Box>
               <Box>
-                <TouchableOpacity>
-                  <AuthButton
-                    alginItems={"center"}
-                    justifyContent={"center"}
-                    mx={12}
-                  >
-                    <AuthButtonText>{"Login"}</AuthButtonText>
-                  </AuthButton>
-                </TouchableOpacity>
-              </Box>
-            </Flex>
-          </Box>
-          <Box
-            border={1}
-            borderRadius={5}
-            borderColor={"white"}
-            borderWidth={1}
-            borderStyle={"solid"}
-            my={2}
-            mx={12}
-          />
-          <Box mb={12}>
-            <Box>
-              <TouchableOpacity
-                onPress={() => {
-                  auth().signInAnonymously();
-                }}
-              >
-                <AuthButton
-                  alginItems={"center"}
-                  justifyContent={"center"}
+                <Flex flexDirection={"column"} justifyContent={"flex-end"}>
+                  <Box mt={10}>
+                    <Box mb={1} mx={12}>
+                      <Header
+                        fontSize={16}
+                        color={isDarkMode ? "white" : "black"}
+                      >
+                        {"Email"}
+                      </Header>
+                    </Box>
+                    <Box mx={12}>
+                      <TextInput
+                        placeholder="hello@email.com"
+                        onChangeText={(text) => {
+                          setEmail(text);
+                        }}
+                        placeholderTextColor={"black"}
+                        style={{
+                          color: "black",
+                          backgroundColor: "lightgrey",
+                          padding: 8,
+                          borderRadius: 3,
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                  <Box mt={10}>
+                    <Box mb={1} mx={12}>
+                      <Header
+                        fontSize={16}
+                        color={isDarkMode ? "white" : "black"}
+                      >
+                        {"Email"}
+                      </Header>
+                    </Box>
+                    <Box mx={12}>
+                      <TextInput
+                        placeholder="*********"
+                        onChangeText={(text) => {
+                          setPassword(text);
+                        }}
+                        placeholderTextColor={"black"}
+                        secureTextEntry
+                        style={{
+                          color: "black",
+                          backgroundColor: "lightgrey",
+                          padding: 8,
+                          borderRadius: 3,
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </Flex>
+                <Button
+                  mt={3}
                   mx={12}
-                >
-                  <AuthButtonText>{"Login Anon"}</AuthButtonText>
-                </AuthButton>
-              </TouchableOpacity>
+                  buttonText={"Sign Up"}
+                  onPress={async () => {
+                    Keyboard.dismiss();
+                    await auth().createUserWithEmailAndPassword(
+                      email,
+                      password
+                    );
+                  }}
+                />
+                <Button
+                  mt={1}
+                  mx={12}
+                  buttonText={"Login"}
+                  onPress={async () => {
+                    Keyboard.dismiss();
+                    await auth().signInWithEmailAndPassword(email, password);
+                  }}
+                />
+              </Box>
             </Box>
-          </Box>
-        </Flex>
-      </SafeAreaView>
+          </TouchableWithoutFeedback>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 };

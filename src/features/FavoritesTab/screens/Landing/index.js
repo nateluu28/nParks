@@ -75,7 +75,7 @@ export const FavoritesLandingScreen = () => {
           flexDirection={"row"}
           justifyContent={"space-between"}
         >
-          <Header fontSize={16} color={isDarkMode ? "white" : "black"}>
+          <Header fontSize={22} color={isDarkMode ? "white" : "black"}>
             {"Favorites"}
           </Header>
         </Flex>

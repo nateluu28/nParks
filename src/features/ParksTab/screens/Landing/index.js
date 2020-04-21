@@ -26,6 +26,7 @@ import {
 } from "@fortawesome/pro-light-svg-icons";
 import { useDarkMode } from "react-native-dark-mode";
 import RNLocation from "react-native-location";
+import { Linking } from "react-native";
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
@@ -104,7 +105,28 @@ export const ParksLandingScreen = () => {
           if (!permissionRequest) {
             Alert.alert(
               "Location Permissions",
-              "You need to enable location permissions in order to view nearby parks"
+              "You need to enable location permissions in order to view nearby parks",
+              [
+                {
+                  text: "Open Settings",
+                  onPress: () => {
+                    Linking.canOpenURL("app-settings:")
+                      .then((supported) => {
+                        if (!supported) {
+                          console.log("Can't handle settings url");
+                        } else {
+                          return Linking.openURL("app-settings:");
+                        }
+                      })
+                      .catch((err) => console.error("An error occurred", err));
+                  },
+                },
+                {
+                  text: "Cancel",
+                  onPress: () => console.log("Cancel Pressed"),
+                  style: "cancel",
+                },
+              ]
             );
           }
 
@@ -164,10 +186,15 @@ export const ParksLandingScreen = () => {
 
         let nearbyParks = await Promise.all(
           parkDocuments.map(async (parkDocument) => {
-            let { d: parkDetails } = await getParkDetails(
+            let { d: parkDetails, ...rest } = await getParkDetails(
               parksCache,
               parkDocument.id
             );
+
+            if (!parkDetails) {
+              return { documentID: parkDocument.id, ...rest };
+            }
+
             return { documentID: parkDocument.id, ...parkDetails };
           })
         );
@@ -193,7 +220,7 @@ export const ParksLandingScreen = () => {
           flexDirection={"row"}
           justifyContent={"space-between"}
         >
-          <Header fontSize={16} color={isDarkMode ? "white" : "black"}>
+          <Header fontSize={22} color={isDarkMode ? "white" : "black"}>
             {"Distance"}
           </Header>
 
