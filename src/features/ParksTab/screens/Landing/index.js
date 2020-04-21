@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Flex, Box } from "@houseme-networks/rental-primitives";
-import { ActivityIndicator, ImageBackground, Text } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, ImageBackground, Text, Alert } from "react-native";
+import SafeAreaView from "react-native-safe-area-view";
 import { Header, Button } from "../../../../components";
 import { ScrollView, TouchableHighlight } from "react-native-gesture-handler";
 import {
@@ -25,6 +25,7 @@ import {
   faCamera,
 } from "@fortawesome/pro-light-svg-icons";
 import { useDarkMode } from "react-native-dark-mode";
+import RNLocation from "react-native-location";
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
@@ -81,15 +82,85 @@ export const ParksLandingScreen = () => {
       const getParks = async ({ pageNumber = 0, limit = 10, merge = true }) => {
         setGettingParks(true);
 
+        console.log("Checking permissions");
+
+        const hasPermissions = await RNLocation.checkPermission({
+          ios: "whenInUse", // or 'always'
+          android: {
+            detail: "coarse", // or 'fine'
+          },
+        });
+
+        console.log("HasPermissions", hasPermissions);
+
+        if (!hasPermissions) {
+          const permissionRequest = await RNLocation.requestPermission({
+            ios: "whenInUse",
+            android: {
+              detail: "coarse",
+            },
+          });
+
+          if (!permissionRequest) {
+            Alert.alert(
+              "Location Permissions",
+              "You need to enable location permissions in order to view nearby parks"
+            );
+          }
+
+          // Exit this effect
+          setGettingParks(false);
+          return;
+        }
+
+        let latestLocation = null;
+        try {
+          console.log("Configuring ...");
+          await RNLocation.configure({ distanceFilter: 100 });
+
+          console.log("Getting latest location ...");
+          latestLocation = await RNLocation.getLatestLocation({
+            timeout: 60000,
+          });
+
+          if (!latestLocation) {
+            console.log("Location was null");
+            setGettingParks(false);
+            return;
+          }
+
+          console.log("Yo");
+        } catch (err) {
+          console.log("Hit error");
+          console.log(err);
+          setGettingParks(false);
+          return;
+        }
+
+        console.log("Latest Location", latestLocation);
+
+        const { longitude, latitude } = latestLocation;
+
+        console.log(latitude, longitude, distance);
+
+        console.log("Getting parks");
         var parkDocuments = await getNearbyParks({
-          lat: 37.97878,
-          long: -121.310667,
+          lat: latitude,
+          long: longitude,
           distance: distance,
         });
 
-        parkDocuments.sort(compareValues("distance"));
+        if (!parkDocuments || parkDocuments.length < 1) {
+          // Exit this effect
+          console.log("No parks");
+          setParks([]);
+          setGettingParks(false);
+          return;
+        }
 
-        console.log(parkDocuments[0]);
+        console.log("First Document", parkDocuments[0]);
+
+        parkDocuments.sort(compareValues("distance"));
 
         let nearbyParks = await Promise.all(
           parkDocuments.map(async (parkDocument) => {
@@ -111,8 +182,11 @@ export const ParksLandingScreen = () => {
   }, [distance]);
 
   return (
-    <SafeAreaView>
-      <ScrollView>
+    <SafeAreaView
+      forceInset={{ bottom: "never" }}
+      style={{ height: "100%", flex: 1 }}
+    >
+      <ScrollView style={{ height: "100%", flex: 1 }}>
         <Flex
           mx={12}
           m={3}
@@ -207,6 +281,7 @@ export const ParksLandingScreen = () => {
         )}
 
         {parks &&
+          parks.length > 0 &&
           parks.map((park) => {
             return <ParkPreview key={park.id} {...park} />;
           })}

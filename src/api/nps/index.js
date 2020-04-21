@@ -185,16 +185,26 @@ export function getParksDetails(parkCodes, fields, resultsPerPage, page) {
 Given the 'parkCode' make a request to the NPS API for
 the most recent news with the fields requested in 'fields'.
 */
-export function getParkNews(parkCode, fields) {
+export async function getParkNews(parkCode, fields, limit) {
   var address =
     "https://developer.nps.gov/api/v1/newsreleases?api_key=XHpS7fKCjdUuTrvKD3tHCuP3rxmKh2cJryQzg23b" +
-    "&limit=1" +
     "&parkCode=" +
     parkCode;
-  address += "&fields=" + fields.join(",");
-  axios.get(address).then((response) => {
-    return response.data.data;
-  });
+
+  if (limit) {
+    address += "&limit=" + limit;
+  }
+
+  if (fields) {
+    address += "&fields=" + fields.join(",");
+  }
+
+  try {
+    const results = await axios.get(address);
+    return results.data.data[0];
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /*
@@ -203,18 +213,28 @@ Do not call GetParkNews multiple times!
 The NPS API supports getting data for multiple parks.
 Don’t forget to implement paging!
 */
-export function getParksNews(parkCodes, fields, resultsPerPage, page) {
+export async function getParksNews(parkCodes, fields, resultsPerPage, page) {
   var address =
     "https://developer.nps.gov/api/v1/newsreleases?api_key=XHpS7fKCjdUuTrvKD3tHCuP3rxmKh2cJryQzg23b" +
     "&limit=" +
-    resultsPerPage +
-    "&start=" +
-    (page - 1) * resultsPerPage;
-  address += "&fields=" + fields.join(",");
+    resultsPerPage;
+
+  if (fields) {
+    address += "&fields=" + fields.join(",");
+  }
+
+  if (page) {
+    address += "&start=" + (page * resultsPerPage + 1);
+  }
+
   address += "&parkCode=" + parkCodes.join(",");
-  axios.get(address).then((response) => {
-    return response.data.data;
-  });
+
+  try {
+    const results = await axios.get(address);
+    return results.data.data;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /*
