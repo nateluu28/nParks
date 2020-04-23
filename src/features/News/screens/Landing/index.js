@@ -8,6 +8,7 @@ import { useParksCache, getParkDetails } from "../../../../providers/Parks";
 import { FlatList } from "react-native-gesture-handler";
 import { RefreshControl } from "react-native";
 import { useDarkMode } from "react-native-dark-mode";
+import { NewsArticle } from "../../components/NewsArticle/";
 
 export const NewsLandingScreen = () => {
   const isDarkMode = useDarkMode();
@@ -73,8 +74,14 @@ export const NewsLandingScreen = () => {
         }
         data={newsArticles}
         renderItem={({ item }) => {
-          console.log("Article Information", item);
-          return <Box />;
+          return (
+            <NewsArticle
+              newsTitle={item.title}
+              newsURL={item.url}
+              newsAbstract={item.abstract}
+            />
+          );
+          console.log(item.image);
         }}
       />
     </SafeAreaView>
