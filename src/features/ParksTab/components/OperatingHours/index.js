@@ -2,6 +2,7 @@ import React from "react";
 import { Text, Alert } from "react-native";
 import { Flex, Box } from "@houseme-networks/rental-primitives";
 import { Header } from "../../../../components";
+import { useDarkMode } from "react-native-dark-mode";
 
 // exceptions: []
 // description: "Although this urban park is accessible 24 hours a day in most areas, most parking lots are open between sunrise to sunset."
@@ -17,8 +18,9 @@ const OperatingHourInfo = ({
   exceptions,
   description,
   standardHours,
-  name
+  name,
 }) => {
+  const isDarkMode = useDarkMode();
   return (
     <Flex
       alginItems={"center"}
@@ -29,7 +31,7 @@ const OperatingHourInfo = ({
       <Box mt={1}>
         <Text
           style={{
-            color: "grey"
+            color: "grey",
           }}
         >
           {description}
@@ -40,10 +42,14 @@ const OperatingHourInfo = ({
           Object.keys(standardHours).map((standardHour, index) => {
             return (
               <Box width={1 / 2} mt={1}>
-                <Header color={"black"} fontSize={10}>
+                <Header color={isDarkMode ? "white" : "black"} fontSize={10}>
                   {`${standardHour}`.toUpperCase()}
                 </Header>
-                <Text>{`${standardHours[standardHour]}`}</Text>
+                <Text
+                  style={{
+                    color: isDarkMode ? "white" : "black",
+                  }}
+                >{`${standardHours[standardHour]}`}</Text>
               </Box>
             );
           })}
@@ -55,7 +61,7 @@ const OperatingHourInfo = ({
 export const OperatingHours = ({ operatingHours }) => {
   return (
     <Flex mx={12}>
-      {operatingHours.map(operatingHour => {
+      {operatingHours.map((operatingHour) => {
         return <OperatingHourInfo {...operatingHour} />;
       })}
       <Box my={2}>

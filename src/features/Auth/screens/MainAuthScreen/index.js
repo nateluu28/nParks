@@ -108,7 +108,7 @@ export const MainAuthScreen = () => {
                         fontSize={16}
                         color={isDarkMode ? "white" : "black"}
                       >
-                        {"Email"}
+                        {"Password"}
                       </Header>
                     </Box>
                     <Box mx={12}>

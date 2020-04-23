@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components/native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableHighlight } from "react-native-gesture-handler";
 import { Flex } from "@houseme-networks/rental-primitives";
 import { useDarkMode } from "react-native-dark-mode";
 import { ActivityIndicator } from "react-native";
@@ -43,7 +43,7 @@ export const Button = ({
   const isDarkMode = useDarkMode();
   const [waiting, setWaiting] = useState(false);
   return (
-    <TouchableOpacity
+    <TouchableHighlight
       onPress={() => {
         const onButtonPress = async () => {
           await setWaiting(true);
@@ -58,6 +58,7 @@ export const Button = ({
         };
         onButtonPress();
       }}
+      underlayColor={"transparent"}
       disabled={disabled}
     >
       <ButtonContainer
@@ -84,6 +85,6 @@ export const Button = ({
           { children }
         )}
       </ButtonContainer>
-    </TouchableOpacity>
+    </TouchableHighlight>
   );
 };
